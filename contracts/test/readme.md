@@ -1,1 +1,1 @@
-forge test --match-path test/ThreeColorPet.t.sol -vv
+forge test --match-path test/Jackpet.t.sol -vv
