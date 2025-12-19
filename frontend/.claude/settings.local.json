@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:*)",
+      "Bash(npm install:*)",
+      "Bash(curl:*)",
+      "Bash(taskkill //F //PID 7820)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
