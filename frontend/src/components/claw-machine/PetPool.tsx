@@ -17,6 +17,7 @@ export interface Pet {
 interface PetPoolProps {
   pets: Pet[];
   grabbingPetId: number | null;
+  isAnimating?: boolean; // When true, disable random movement so claw can accurately grab
 }
 
 const petImages = {
@@ -44,7 +45,7 @@ function generateRandomPath(seed: number) {
   return points;
 }
 
-export default function PetPool({ pets, grabbingPetId }: PetPoolProps) {
+export default function PetPool({ pets, grabbingPetId, isAnimating = false }: PetPoolProps) {
   const [hoveredPetId, setHoveredPetId] = useState<number | null>(null);
   const [tick, setTick] = useState(0);
   const [mounted, setMounted] = useState(false);
@@ -54,14 +55,14 @@ export default function PetPool({ pets, grabbingPetId }: PetPoolProps) {
     setMounted(true);
   }, []);
 
-  // Periodically update movement target
+  // Periodically update movement target - pause during grab animation
   useEffect(() => {
-    if (!mounted) return;
+    if (!mounted || isAnimating) return;
     const interval = setInterval(() => {
       setTick((t) => t + 1);
     }, 2000);
     return () => clearInterval(interval);
-  }, [mounted]);
+  }, [mounted, isAnimating]);
 
   // Generate random movement parameters for each pet
   const petAnimParams = useMemo(() => {
@@ -85,7 +86,8 @@ export default function PetPool({ pets, grabbingPetId }: PetPoolProps) {
         const isHovered = hoveredPetId === pet.id;
         const params = petAnimParams.find((p) => p.id === pet.id);
         const pathIndex = tick % (params?.path.length || 1);
-        const targetOffset = params?.path[pathIndex] || { x: 0, y: 0 };
+        // Disable random offset during grab animation so claw can accurately target
+        const targetOffset = isAnimating ? { x: 0, y: 0 } : (params?.path[pathIndex] || { x: 0, y: 0 });
 
         return (
           <motion.div
@@ -103,8 +105,8 @@ export default function PetPool({ pets, grabbingPetId }: PetPoolProps) {
             transition={{
               scale: { duration: 0.3 },
               opacity: { duration: 0.3 },
-              x: { duration: params?.duration || 2, ease: "easeInOut" },
-              y: { duration: (params?.duration || 2) * 0.9, ease: "easeInOut" },
+              x: { duration: isAnimating ? 0.3 : (params?.duration || 2), ease: "easeInOut" },
+              y: { duration: isAnimating ? 0.3 : ((params?.duration || 2) * 0.9), ease: "easeInOut" },
             }}
             onMouseEnter={() => setHoveredPetId(pet.id)}
             onMouseLeave={() => setHoveredPetId(null)}

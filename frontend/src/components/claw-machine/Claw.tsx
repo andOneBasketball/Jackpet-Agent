@@ -11,6 +11,19 @@ interface ClawProps {
 }
 
 export default function Claw({ x, y, isGrabbing, isAnimating, isIdle }: ClawProps) {
+  // In idle mode, arms animate open/close to hint user to click
+  // When grabbing, arms close fully
+  const getArmRotation = (baseAngle: number, isLeft: boolean) => {
+    if (isGrabbing) {
+      return isLeft ? 35 : -35;
+    }
+    if (isIdle && !isAnimating) {
+      // Idle grab-release animation cycle
+      return isLeft ? [8, 30, 8] : [-8, -30, -8];
+    }
+    return isLeft ? 10 : -10;
+  };
+
   return (
     <motion.div
       className="absolute z-20 pointer-events-none"
@@ -80,8 +93,12 @@ export default function Claw({ x, y, isGrabbing, isAnimating, isIdle }: ClawProp
           {/* Left arm */}
           <motion.div
             className="origin-top"
-            animate={{ rotate: isGrabbing ? 30 : 10 }}
-            transition={{ type: "spring", stiffness: 200, damping: 15 }}
+            animate={{ rotate: getArmRotation(10, true) }}
+            transition={
+              isIdle && !isAnimating
+                ? { duration: 1.2, repeat: Infinity, ease: "easeInOut" }
+                : { type: "spring", stiffness: 200, damping: 15 }
+            }
           >
             <div className="relative" style={{ width: 8 }}>
               {/* Upper arm segment */}
@@ -91,8 +108,12 @@ export default function Claw({ x, y, isGrabbing, isAnimating, isIdle }: ClawProp
               {/* Lower arm with claw tip */}
               <motion.div
                 className="origin-top -mt-0.5"
-                animate={{ rotate: isGrabbing ? -12 : 0 }}
-                transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                animate={{ rotate: isGrabbing ? -12 : isIdle && !isAnimating ? [-3, -15, -3] : 0 }}
+                transition={
+                  isIdle && !isAnimating
+                    ? { duration: 1.2, repeat: Infinity, ease: "easeInOut" }
+                    : { type: "spring", stiffness: 200, damping: 15 }
+                }
               >
                 <div className="w-1.5 h-5 bg-gradient-to-b from-gray-400 to-gray-500 rounded-b-lg mx-auto border border-gray-600" />
                 {/* Claw tip */}
@@ -103,8 +124,12 @@ export default function Claw({ x, y, isGrabbing, isAnimating, isIdle }: ClawProp
 
           {/* Center arm */}
           <motion.div
-            animate={{ scaleY: isGrabbing ? 0.95 : 1 }}
-            transition={{ type: "spring", stiffness: 200, damping: 15 }}
+            animate={{ scaleY: isGrabbing ? 0.95 : isIdle && !isAnimating ? [1, 0.92, 1] : 1 }}
+            transition={
+              isIdle && !isAnimating
+                ? { duration: 1.2, repeat: Infinity, ease: "easeInOut" }
+                : { type: "spring", stiffness: 200, damping: 15 }
+            }
             className="mx-0.5"
           >
             <div className="relative" style={{ width: 8 }}>
@@ -118,16 +143,24 @@ export default function Claw({ x, y, isGrabbing, isAnimating, isIdle }: ClawProp
           {/* Right arm */}
           <motion.div
             className="origin-top"
-            animate={{ rotate: isGrabbing ? -30 : -10 }}
-            transition={{ type: "spring", stiffness: 200, damping: 15 }}
+            animate={{ rotate: getArmRotation(-10, false) }}
+            transition={
+              isIdle && !isAnimating
+                ? { duration: 1.2, repeat: Infinity, ease: "easeInOut" }
+                : { type: "spring", stiffness: 200, damping: 15 }
+            }
           >
             <div className="relative" style={{ width: 8 }}>
               <div className="w-2 h-6 bg-gradient-to-r from-gray-400 via-gray-300 to-gray-400 rounded-sm shadow-sm mx-auto border border-gray-500" />
               <div className="w-2.5 h-2.5 bg-gradient-to-b from-gray-400 to-gray-600 rounded-full mx-auto -mt-0.5 border border-gray-700" />
               <motion.div
                 className="origin-top -mt-0.5"
-                animate={{ rotate: isGrabbing ? 12 : 0 }}
-                transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                animate={{ rotate: isGrabbing ? 12 : isIdle && !isAnimating ? [3, 15, 3] : 0 }}
+                transition={
+                  isIdle && !isAnimating
+                    ? { duration: 1.2, repeat: Infinity, ease: "easeInOut" }
+                    : { type: "spring", stiffness: 200, damping: 15 }
+                }
               >
                 <div className="w-1.5 h-5 bg-gradient-to-b from-gray-400 to-gray-500 rounded-b-lg mx-auto border border-gray-600" />
                 <div className="w-2.5 h-3 bg-gradient-to-b from-orange-400 to-orange-600 rounded-b-full mx-auto -mt-0.5 shadow-sm border border-orange-700" />

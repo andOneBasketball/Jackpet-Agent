@@ -27,8 +27,8 @@ function generatePetPool(): Pet[] {
       pets.push({
         id: id++,
         type,
-        x: 30 + Math.random() * 280,
-        y: 20 + Math.random() * 100, // Adjusted for smaller pet pool area
+        x: 25 + Math.random() * 390,
+        y: 15 + Math.random() * 190,
       });
     }
   });
@@ -73,16 +73,31 @@ export default function ClawMachine({
     // Calculate relative position within the machine
     const relativeX = e.clientX - rect.left - rect.width / 2;
     // Clamp to machine bounds
-    const clampedX = Math.max(-140, Math.min(140, relativeX));
+    const clampedX = Math.max(-200, Math.min(200, relativeX));
     setMouseClawX(clampedX);
   }, [gamePhase, isPlaying]);
 
-  // Click handler to start game
-  const handleMachineClick = useCallback(() => {
+  // Start game - don't regenerate pets here to avoid sudden position change
+  const handlePlay = useCallback(async () => {
+    if (gamePhase !== "idle") return;
+    // Clear the ref before starting new game so new result will trigger animation
+    processedResultRef.current = null;
+    setCollected([]);
+    setShowResult(false);
+    await onPlay();
+  }, [gamePhase, onPlay]);
+
+  // Click handler to start game - claw grabs first then starts
+  const handleMachineClick = useCallback(async () => {
     if (gamePhase === "idle" && !isPlaying) {
-      handlePlay();
+      // Show grab animation first
+      setIsGrabbing(true);
+      await sleep(300);
+      setIsGrabbing(false);
+      // Then start game
+      await handlePlay();
     }
-  }, [gamePhase, isPlaying]);
+  }, [gamePhase, isPlaying, handlePlay]);
 
   // When result arrives, run grab animation
   useEffect(() => {
@@ -123,34 +138,59 @@ export default function ClawMachine({
     // Shuffle grab order
     toGrab.sort(() => Math.random() - 0.5);
 
-    const availablePets = [...pets];
+    // Use current pets state for accurate position tracking
+    const currentPets = [...pets];
     const newCollected: CollectedPet[] = [];
+
+    // Coordinate calculation:
+    // Machine width: 480px, center: 240px
+    // Pet pool left padding: 12px (left-3)
+    // Pet size: 40px (w-10 h-10)
+    //
+    // Layout:
+    // - Claw container top: 56px
+    // - Pet pool top: 120px
+    // - When claw y=0, claw tip is at approximately 56 + 100 = 156px from machine top
+    // - Pet top position = 120 + pet.y
+    // - To align claw tip with pet top: 156 + y = 120 + pet.y
+    // - y = pet.y - 36
+    const machineCenter = 240;
+    const petPoolLeftPadding = 12;
+    const petHalfSize = 20;
 
     for (let i = 0; i < 12; i++) {
       const targetType = toGrab[i];
-      const targetPetIndex = availablePets.findIndex((p) => p.type === targetType);
+      const targetPetIndex = currentPets.findIndex((p) => p.type === targetType);
       if (targetPetIndex === -1) continue;
 
-      const targetPet = availablePets[targetPetIndex];
-      availablePets.splice(targetPetIndex, 1);
+      const targetPet = currentPets[targetPetIndex];
+      currentPets.splice(targetPetIndex, 1);
 
-      // Move claw to target position (pet pool is 56px below claw origin)
-      setClawX(targetPet.x - 150);
-      setClawY(targetPet.y + 55);
+      // Calculate claw position to match pet
+      const clawTargetX = targetPet.x + petPoolLeftPadding + petHalfSize - machineCenter;
+      // Y position - claw tip should reach pet top, use negative offset to stop above pet
+      const clawTargetY = Math.max(0, targetPet.y - 40);
+
+      // Move claw horizontally first
+      setClawX(clawTargetX);
+      await sleep(300);
+
+      // Descend to pet position
+      setClawY(clawTargetY);
       await sleep(400);
 
-      // Grab
+      // Grab - claw closes on the pet (hold longer so user can see)
       setIsGrabbing(true);
       setGrabbingPetId(targetPet.id);
-      await sleep(300);
+      await sleep(500);
 
-      // Lift up
+      // Lift up with pet
       setClawY(0);
-      await sleep(300);
+      await sleep(400);
 
-      // Move to collection box
-      setClawX(200);
-      await sleep(300);
+      // Move to collection box (right side)
+      setClawX(260);
+      await sleep(350);
 
       // Release
       setIsGrabbing(false);
@@ -175,23 +215,12 @@ export default function ClawMachine({
   };
 
   // Reset game (for UI only, doesn't clear result tracking)
-  const resetGame = () => {
+  const resetGame = useCallback(() => {
     setPets(generatePetPool());
     setCollected([]);
     setGamePhase("idle");
     setShowResult(false);
-    // Don't clear processedResultRef here - it prevents re-triggering animation
-    // It will be cleared when result becomes null (new game starts)
-  };
-
-  // Start game
-  const handlePlay = async () => {
-    if (gamePhase !== "idle") return;
-    // Clear the ref before starting new game so new result will trigger animation
-    processedResultRef.current = null;
-    resetGame();
-    await onPlay();
-  };
+  }, []);
 
   // Only 5-4-3 loses, all other combinations win
   const isWinner = result && !(result.a === 5 && result.b === 4 && result.c === 3);
@@ -207,7 +236,7 @@ export default function ClawMachine({
       {/* Claw machine body */}
       <div
         ref={machineRef}
-        className="relative w-[380px] h-[400px] bg-gradient-to-b from-purple-900 via-purple-800 to-purple-900 rounded-2xl border-6 border-yellow-500 shadow-2xl overflow-hidden cursor-pointer"
+        className="relative w-[480px] h-[380px] bg-gradient-to-b from-purple-900 via-purple-800 to-purple-900 rounded-2xl border-6 border-yellow-500 shadow-2xl overflow-hidden cursor-pointer"
         onMouseMove={handleMouseMove}
         onClick={handleMachineClick}
       >
@@ -244,32 +273,17 @@ export default function ClawMachine({
         </div>
 
         {/* Mechanical claw - positioned to hang from the track */}
-        <div className="absolute top-14 left-0 right-0 h-[180px] z-10">
+        <div className="absolute top-14 left-0 right-0 h-[240px] z-10">
           <Claw x={actualClawX} y={clawY} isGrabbing={isGrabbing} isAnimating={isAnimating} isIdle={isIdle} />
         </div>
 
-        {/* Pet pool area - positioned below the claw track */}
-        <div className="absolute top-28 left-3 right-3 h-[160px] bg-gradient-to-b from-blue-900/50 to-purple-900/50 rounded-lg border-2 border-blue-400/30">
-          <PetPool pets={pets} grabbingPetId={grabbingPetId} />
-        </div>
+        {/* Upper empty area - visible space between claw and pet pool */}
+        <div className="absolute top-[72px] left-3 right-3 h-[50px] bg-gradient-to-b from-purple-900/80 to-transparent rounded-t-lg" />
 
-        {/* Click to play hint */}
-        {isIdle && (
-          <motion.div
-            className="absolute bottom-24 left-0 right-0 flex justify-center pointer-events-none z-20"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="px-4 py-2 rounded-full border-2 border-yellow-400/60 backdrop-blur-sm"
-              animate={{ scale: [1, 1.05, 1], opacity: [0.8, 1, 0.8] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              <span className="text-yellow-300 font-bold text-sm drop-shadow-lg">Click to Play!</span>
-            </motion.div>
-          </motion.div>
-        )}
+        {/* Pet pool area - positioned below the upper space */}
+        <div className="absolute top-[120px] left-3 right-3 bottom-3 bg-gradient-to-b from-blue-900/50 to-purple-900/50 rounded-lg border-2 border-blue-400/30">
+          <PetPool pets={pets} grabbingPetId={grabbingPetId} isAnimating={isAnimating} />
+        </div>
 
         {/* Neon border effect */}
         <div className="absolute inset-0 rounded-2xl pointer-events-none">
