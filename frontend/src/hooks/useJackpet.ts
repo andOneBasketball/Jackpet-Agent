@@ -1,6 +1,6 @@
 "use client";
 
-import { useReadContract, useWriteContract, useChainId, usePublicClient } from "wagmi";
+import { useReadContract, useWriteContract, useChainId, usePublicClient, useBalance } from "wagmi";
 import { formatEther, decodeEventLog } from "viem";
 import { useState, useCallback, useRef } from "react";
 import { getContractAddress, CONTRACT_ABI } from "@/config/contract";
@@ -55,6 +55,11 @@ export function useJackpet() {
     functionName: "maxTicketRate",
   });
 
+  // Read contract balance
+  const { data: contractBalance, refetch: refetchBalance } = useBalance({
+    address: getContractAddress(chainId),
+  });
+
   // Write contract
   const { writeContractAsync } = useWriteContract();
 
@@ -105,8 +110,9 @@ export function useJackpet() {
             });
             setIsPlaying(false);
             stopPolling();
-            // Refresh jackpot data
+            // Refresh jackpot and balance data
             refetchJackpot();
+            refetchBalance();
             return;
           }
         } catch (error) {
@@ -126,7 +132,7 @@ export function useJackpet() {
 
       poll();
     },
-    [chainId, publicClient, stopPolling, refetchJackpot]
+    [chainId, publicClient, stopPolling, refetchJackpot, refetchBalance]
   );
 
   // Start game
@@ -235,6 +241,7 @@ export function useJackpet() {
   return {
     ticketFee: ticketFee ? formatEther(ticketFee) : "0.01",
     jackpotPool: jackpotPool ? formatEther(jackpotPool) : "0",
+    contractBalance: contractBalance ? contractBalance.formatted : "0",
     maxTicketRate: maxTicketRate || 1000,
     isPlaying,
     result,

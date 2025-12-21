@@ -97,6 +97,7 @@ export default function Home() {
   const {
     ticketFee,
     jackpotPool,
+    contractBalance,
     isPlaying,
     result,
     play,
@@ -197,6 +198,7 @@ export default function Home() {
                 isPlaying={isPlaying}
                 ticketFee={ticketFee}
                 jackpot={jackpotPool}
+                contractBalance={contractBalance}
               />
             )}
           </motion.div>

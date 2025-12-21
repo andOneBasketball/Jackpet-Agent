@@ -12,6 +12,7 @@ interface ClawMachineProps {
   isPlaying: boolean;
   ticketFee: string;
   jackpot: string;
+  contractBalance: string;
 }
 
 type PetType = "FOX" | "WOLF" | "FROG";
@@ -43,6 +44,7 @@ export default function ClawMachine({
   isPlaying,
   ticketFee,
   jackpot,
+  contractBalance,
 }: ClawMachineProps) {
   const [mounted, setMounted] = useState(false);
   const [pets, setPets] = useState<Pet[]>([]);
@@ -271,7 +273,11 @@ export default function ClawMachine({
               <span className="text-white font-bold ml-1">{ticketFee}</span>
             </div>
             <div className="text-center">
-              <span className="text-white/80">JACKPOT:</span>
+              <span className="text-white/80">BALANCE:</span>
+              <span className="text-white font-bold ml-1">{contractBalance}</span>
+            </div>
+            <div className="text-center">
+              <span className="text-white/80">JACKPOOL:</span>
               <motion.span
                 className="text-white font-bold ml-1"
                 animate={{ scale: [1, 1.1, 1] }}
@@ -321,11 +327,10 @@ export default function ClawMachine({
       <motion.button
         onClick={handlePlay}
         disabled={gamePhase !== "idle" || isPlaying}
-        className={`mt-2 w-full py-3 rounded-xl font-bold text-lg transition-all ${
-          gamePhase === "idle" && !isPlaying
-            ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white shadow-lg hover:shadow-xl"
-            : "bg-gray-600 text-gray-400 cursor-not-allowed"
-        }`}
+        className={`mt-2 w-full py-3 rounded-xl font-bold text-lg transition-all ${gamePhase === "idle" && !isPlaying
+          ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white shadow-lg hover:shadow-xl"
+          : "bg-gray-600 text-gray-400 cursor-not-allowed"
+          }`}
         whileHover={gamePhase === "idle" ? { scale: 1.02 } : {}}
         whileTap={gamePhase === "idle" ? { scale: 0.98 } : {}}
       >
@@ -358,11 +363,10 @@ export default function ClawMachine({
               initial={{ scale: 0, rotate: -10 }}
               animate={{ scale: 1, rotate: 0 }}
               exit={{ scale: 0 }}
-              className={`p-8 rounded-2xl ${
-                isWinner
-                  ? "bg-gradient-to-br from-yellow-400 to-orange-500"
-                  : "bg-gradient-to-br from-gray-700 to-gray-800"
-              } text-center shadow-2xl max-w-sm`}
+              className={`p-8 rounded-2xl ${isWinner
+                ? "bg-gradient-to-br from-yellow-400 to-orange-500"
+                : "bg-gradient-to-br from-gray-700 to-gray-800"
+                } text-center shadow-2xl max-w-sm`}
               onClick={(e) => e.stopPropagation()}
             >
               {isWinner ? (
@@ -441,11 +445,10 @@ export default function ClawMachine({
                   setShowResult(false);
                   resetGame();
                 }}
-                className={`mt-4 px-6 py-2 rounded-lg font-bold ${
-                  isWinner
-                    ? "bg-white/20 hover:bg-white/30 text-white"
-                    : "bg-purple-600 hover:bg-purple-500 text-white"
-                }`}
+                className={`mt-4 px-6 py-2 rounded-lg font-bold ${isWinner
+                  ? "bg-white/20 hover:bg-white/30 text-white"
+                  : "bg-purple-600 hover:bg-purple-500 text-white"
+                  }`}
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.5 }}
