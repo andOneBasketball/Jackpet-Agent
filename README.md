@@ -3,6 +3,8 @@
 ## Intro
 Jackpet is a decentralized, luck-powered pet game on Arbitrum, where players stake 0.01 ETH to roll adorable pets, compete for jackpots, and share rewards from an ever-growing on-chain prize pool—secured by verifiable randomness and dedicated to long-term charity impact.
 
+![jackpet_cover](./doc/picture/jackpet_cover.jpeg)
+
 ## Project Overview
 
 **Jackpet** is a decentralized, chain-verifiable lucky pet game built on **Arbitrum**, designed to deliver excitement, fairness, and a strong sense of fortune to every player. By combining adorable pet-themed gameplay with transparent on-chain mechanics, Jackpet offers a fun yet trustworthy decentralized lottery experience.
