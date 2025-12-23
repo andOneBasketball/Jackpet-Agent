@@ -4,7 +4,8 @@
       "Bash(npm run build:*)",
       "Bash(npm install:*)",
       "Bash(curl:*)",
-      "Bash(taskkill //F //PID 7820)"
+      "Bash(taskkill //F //PID 7820)",
+      "WebFetch(domain:github.com)"
     ],
     "deny": [],
     "ask": []

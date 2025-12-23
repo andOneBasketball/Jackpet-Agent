@@ -6,6 +6,7 @@ import { useAccount } from "wagmi";
 import { motion } from "framer-motion";
 import { ClawMachine } from "@/components/claw-machine";
 import PayoutTable from "@/components/PayoutTable";
+import ERC7715Panel from "@/components/ERC7715Panel";
 import { useJackpet } from "@/hooks/useJackpet";
 
 // Custom ConnectButton to force display chain info
@@ -192,14 +193,21 @@ export default function Home() {
                 </div>
               </div>
             ) : (
-              <ClawMachine
-                onPlay={() => play()}
-                result={result ? { a: result.a, b: result.b, c: result.c } : null}
-                isPlaying={isPlaying}
-                ticketFee={ticketFee}
-                jackpot={jackpotPool}
-                contractBalance={contractBalance}
-              />
+              <div className="flex items-start gap-4">
+                {/* Left: Claw Machine */}
+                <ClawMachine
+                  onPlay={() => play()}
+                  result={result ? { a: result.a, b: result.b, c: result.c } : null}
+                  isPlaying={isPlaying}
+                  ticketFee={ticketFee}
+                  jackpot={jackpotPool}
+                  contractBalance={contractBalance}
+                />
+                {/* Right: ERC-7715 Auto-Play Panel */}
+                <div className="w-[280px] flex-shrink-0">
+                  <ERC7715Panel onAutoPlay={() => play()} isPlaying={isPlaying} />
+                </div>
+              </div>
             )}
           </motion.div>
         </div>
