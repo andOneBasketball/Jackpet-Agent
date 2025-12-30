@@ -123,6 +123,7 @@ contract Jackpet is VRFConsumerBaseV2Plus {
         uint256 jackpotPayout
     );
     event FundsWithdrawn(address indexed to, uint256 amount);
+    event Deposited(address indexed depositor, uint256 amount);
     event JackpotContribution(uint256 amount, uint256 newPoolBalance);
     event JackpotDistributed(uint256 amount, address indexed player);
     event JackpotConfigUpdated(uint256 contributionRate);
@@ -305,9 +306,30 @@ contract Jackpet is VRFConsumerBaseV2Plus {
         emit FundsWithdrawn(to, amount);
     }
 
+    /**
+     * @notice Deposit function for the project to fund the contract
+     * Can be called by anyone to deposit funds into the contract
+     * These funds will be used for payouts and jackpot pool
+     */
+    function deposit() external payable {
+        require(msg.value > 0, "DEPOSIT_ZERO");
+        // Funds are automatically added to contract balance
+        // Event is emitted to track deposits
+        emit Deposited(msg.sender, msg.value);
+    }
+
     // Jackpot funds can only be won through gameplay, not withdrawn
 
-    receive() external payable {}
+    /**
+     * @notice Receive function that starts a game round with ticketRate=100
+     * Only accepts exactly ticketFeeWei to start a single game
+     * This is the entry point for ERC-7715 compatibility since we cannot pass arbitrary calldata
+     */
+    receive() external payable {
+        require(msg.value == ticketFeeWei, "INVALID_AMOUNT");
+        _play(100); // ticketRate = 100 (1x ticket fee)
+    }
+
     fallback() external payable {}
 
     // ============ Rule management ============
@@ -368,6 +390,10 @@ contract Jackpet is VRFConsumerBaseV2Plus {
     function play(
         uint32 ticketRate
     ) external payable returns (uint256 requestId) {
+        return _play(ticketRate);
+    }
+
+    function _play(uint32 ticketRate) internal returns (uint256 requestId) {
         require(ticketRate >= 100 && ticketRate <= maxTicketRate, "BAD_RATE");
         require(msg.value == (ticketRate * ticketFeeWei) / 100, "BAD_FEE");
         VRFV2PlusClient.RandomWordsRequest memory req = VRFV2PlusClient
