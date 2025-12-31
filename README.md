@@ -1,81 +1,146 @@
-# Jackpet – A Decentralized Lucky Pet Game on Arbitrum
+# Jackpet Agent – An Agentic, Chain-Agnostic On-Chain Game
 
 ## Intro
-Jackpet is a decentralized, luck-powered pet game on Arbitrum, where players stake 0.01 ETH to roll adorable pets, compete for jackpots, and share rewards from an ever-growing on-chain prize pool—secured by verifiable randomness and dedicated to long-term charity impact.
+Jackpet Agent is a chain-agnostic, agentic on-chain pet game, deployed on Sepolia, where players grant a single ERC-7715 permission and let an autonomous agent auto-play multiple rounds with enforced limits via MetaMask Advanced Permissions.
 
-![jackpet_cover](./doc/picture/jackpet_cover.jpeg)
+![jackpet_agent_cover](./doc/picture/jackpet_agent_optimized_cover.png)
 
 ## Project Overview
 
-**Jackpet** is a decentralized, chain-verifiable lucky pet game built on **Arbitrum**, designed to deliver excitement, fairness, and a strong sense of fortune to every player. By combining adorable pet-themed gameplay with transparent on-chain mechanics, Jackpet offers a fun yet trustworthy decentralized lottery experience.
+**Jackpet Agent** is an agentic, chain-agnostic, luck-powered on-chain pet game built to showcase **MetaMask Advanced Permissions**. Currently deployed on **Sepolia** as a reference network, Jackpet Agent allows players to grant a **single ERC-7715 permission** and delegate gameplay to an autonomous agent that can automatically start and execute multiple game rounds on their behalf—without repeated wallet confirmations.
 
-Players join the game by purchasing a ticket (0.01 ETH) and may optionally select a multiplier of up to **100×**, amplifying both risk and reward. In each round, **12 pets** are randomly drawn from a collection of **24 pets**, consisting of **3 types with 8 variations each**. All randomness is powered by **Chainlink VRF**, ensuring outcomes are fully verifiable, tamper-proof, and provably fair.
+By combining adorable pet-themed gameplay, verifiable on-chain randomness, and permission-based automation, Jackpet Agent demonstrates how **Advanced Permissions (ERC-7715 + EIP-7702)** unlock seamless, trust-minimized autonomous gaming experiences.
 
 ---
 
-## How It Works
+## Why Jackpet Agent
 
-- **Ticket Fee**: 0.01 ETH per game  
-- **Initial Liquidity**: The project injects ETH into the contract to bootstrap rewards  
-- **Prize Pool Growth**: 1% of each losing ticket is automatically added to a secure on-chain prize pool  
-- **Multiplier Option**: Players may choose multipliers up to 100× to increase excitement  
-- **Fairness Guarantee**: Chainlink VRF ensures decentralized, auditable randomness for every draw  
+Traditional on-chain games require users to manually approve every action, resulting in frequent wallet pop-ups and fragmented gameplay. Jackpet Agent reimagines this flow:
 
-The prize pool is governed entirely by smart contracts and **cannot be withdrawn by the project team** under any circumstances.
+* ✅ One-time, limited permission via ERC-7715
+* 🤖 Autonomous agent executes multiple game rounds
+* 🔐 All actions strictly enforced on-chain
+* 🔄 Permissions are revocable at any time
+
+This makes Jackpet Agent a native example of an **agentic dApp** powered by Advanced Permissions.
+
+---
+
+## Core Gameplay
+
+Players participate in a luck-based pet game by authorizing an agent to start games within clearly defined constraints.
+
+* **Ticket Fee**: 0.01 ETH per game
+* **Authorization Model**: Single ERC-7715 permission (spend + game-start)
+* **Execution**: Autonomous agent triggers game rounds
+* **Automation**: Multiple rounds executed without further user interaction
+
+Each round randomly draws **12 pets** from a set of **24 pets**, composed of **3 types with 8 variations each**.
+
+---
+
+## Verifiable Randomness
+
+All randomness in Jackpet Agent is powered by **Chainlink VRF**, ensuring that every game outcome is:
+
+* Fully on-chain
+* Tamper-proof
+* Publicly auditable
+* Provably fair
+
+This guarantees that neither the agent nor the project team can influence game results.
+
+---
+
+## Prize Pool Mechanics
+
+* **Initial Liquidity**: Bootstrapped by the project
+* **Prize Pool Growth**: 1% of each losing ticket is automatically added to an on-chain prize pool
+* **Custody**: Fully controlled by smart contracts
+* **Team Access**: ❌ The project team cannot withdraw funds under any circumstances
 
 ---
 
 ## Reward Rules
 
-Player rewards are determined by the final pet combination drawn in each game. Rewards consist of two parts:  
-1. **A ticket-based payout multiplier**  
-2. **A percentage share of the current prize pool**
+Rewards are determined by the final pet combination drawn in each round. Each winning outcome consists of:
+
+1. A **ticket-based payout multiplier**
+2. A **percentage share of the current prize pool**
 
 | Pet Combination | Ticket Multiplier | Prize Pool Share |
-|-----------------|------------------|------------------|
-| `{8,4,0}`       | 11×              | 99% of prize pool |
-| `{8,3,1}`       | 6×               | 30% of current prize pool |
-| `{8,2,2}`       | 6×               | 30% of current prize pool |
-| `{7,5,0}`       | 6×               | 30% of current prize pool |
-| `{7,4,1}`       | 4×               | 10% of current prize pool |
-| `{7,3,2}`       | 2×               | 10% of current prize pool |
-| `{6,6,0}`       | 6×               | 30% of current prize pool |
-| `{6,5,1}`       | 2×               | 10% of current prize pool |
-| `{6,4,2}`       | 1.1×             | 0% |
-| `{6,3,3}`       | 1.2×             | 0% |
-| `{5,5,2}`       | 1.2×             | 0% |
-| `{4,4,4}`       | 1.1×             | 0% |
-| `{5,4,3}`       | 0×               | Loss |
+| --------------- | ----------------- | ---------------- |
+| `{8,4,0}`       | 11×               | 99%              |
+| `{8,3,1}`       | 6×                | 30%              |
+| `{8,2,2}`       | 6×                | 30%              |
+| `{7,5,0}`       | 6×                | 30%              |
+| `{7,4,1}`       | 4×                | 10%              |
+| `{7,3,2}`       | 2×                | 10%              |
+| `{6,6,0}`       | 6×                | 30%              |
+| `{6,5,1}`       | 2×                | 10%              |
+| `{6,4,2}`       | 1.1×              | 0%               |
+| `{6,3,3}`       | 1.2×              | 0%               |
+| `{5,5,2}`       | 1.2×              | 0%               |
+| `{4,4,4}`       | 1.1×              | 0%               |
+| `{5,4,3}`       | 0×                | Loss             |
 
-### Jackpot Highlight
+---
 
-The legendary combination **`{8,4,0}`** represents the ultimate jackpot in Jackpet.  
-Winning this combination rewards the player with **10× the ticket fee (excluding the original ticket)** and **99% of the entire prize pool**, creating a rare but highly thrilling moment of on-chain fortune.
+## Jackpot Highlight
+
+The legendary combination **`{8,4,0}`** represents the ultimate jackpot.
+
+* 🎉 **11× ticket payout** (excluding original stake)
+* 🏆 **99% of the entire prize pool**
+
+This rare outcome creates a highly memorable, fully verifiable on-chain jackpot moment—executed autonomously by the agent.
+
+---
+
+## Advanced Permissions Design
+
+Jackpet Agent uses **MetaMask Advanced Permissions** as a core primitive:
+
+* **Standard**: ERC-7715
+* **Execution Layer**: EIP-7702
+* **Scope**: Limited ETH spend + game-start calls
+* **Constraints**: Per-round cost, max rounds, validity period
+
+All permissions are:
+
+* Enforced on-chain
+* Transparent to users
+* Revocable at any time
 
 ---
 
 ## Social Commitment
 
-Jackpet is designed with long-term responsibility in mind.
+Jackpet Agent is designed with long-term responsibility in mind:
 
-- The prize pool is **fully locked by smart contract logic** and can only be distributed according to predefined game rules  
-- **20% of the contract’s annual balance** will be donated to charitable causes each year  
+* 🔒 Prize pool funds are locked by smart contracts
+* ❤️ **20% of the contract’s annual balance** is committed to charitable donations
 
-By combining entertainment with social good, Jackpet aims to ensure that on-chain fun also creates real-world positive impact.
+Automation does not compromise accountability—every action remains verifiable and governed by code.
 
 ---
 
 ## Vision
 
-Jackpet aspires to become more than just a game:
+Jackpet Agent aims to demonstrate the future of autonomous on-chain applications:
 
-- 🎮 Deliver joyful, engaging gameplay through cute and memorable pet characters  
-- 🎲 Guarantee **provably fair and transparent randomness** using decentralized VRF  
-- 🍀 Give every player a genuine sense of luck and opportunity  
-- 🔍 Build trust through fully on-chain, auditable game logic  
-- 🌍 Grow into a sustainable, community-driven decentralized gaming protocol  
+* 🤖 Agent-driven gameplay with strict permission boundaries
+* 🔐 Trust-minimized automation using Advanced Permissions
+* 🎲 Provably fair randomness
+* 🧩 Chain-agnostic architecture for EIP-7702–enabled networks
+* 🌍 A blueprint for agentic games and autonomous dApps
 
-Originally created for the **Arbitrum APAC Mini Hackathon**, Jackpet is designed with real-world adoption in mind and aims to evolve into a fully incubated project within the **Arbitrum ecosystem**, offering a fair, transparent, and delightful decentralized lottery experience for players around the world.
+---
+
+## Hackathon Context
+Jackpet Agent is a **new project built specifically for the MetaMask Advanced Permissions Dev Cook-Off**. While inspired by the original Jackpet game mechanics, the project has been re-architected from the ground up to highlight **ERC-7715 permissions, agent-based execution, and autonomous gameplay**.
+
+It serves as a concrete example of how Advanced Permissions unlock seamless, secure, and creative agentic user experiences.
 
 ## License
 
