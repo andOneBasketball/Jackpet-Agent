@@ -120,7 +120,6 @@ export default function Home() {
     supportStatus,
     requestPermission,
     revokePermission,
-    stopAutoPlay,
     clearError,
     getTimeRemaining,
   } = erc7715;
@@ -243,7 +242,6 @@ export default function Home() {
                     supportStatus={supportStatus}
                     requestPermission={requestPermission}
                     revokePermission={revokePermission}
-                    stopAutoPlay={stopAutoPlay}
                     clearError={clearError}
                     getTimeRemaining={getTimeRemaining}
                   />

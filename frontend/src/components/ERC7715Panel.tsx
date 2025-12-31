@@ -24,7 +24,6 @@ interface ERC7715PanelProps {
     overrideSettings?: Partial<AuthSettings>
   ) => Promise<boolean>;
   revokePermission: () => void;
-  stopAutoPlay: () => void;
   clearError: () => void;
   getTimeRemaining: () => string;
 }
@@ -42,7 +41,6 @@ export default function ERC7715Panel({
   supportStatus,
   requestPermission,
   revokePermission,
-  stopAutoPlay,
   clearError,
   getTimeRemaining,
 }: ERC7715PanelProps) {
@@ -261,14 +259,6 @@ export default function ERC7715Panel({
                     )}
                   </div>
 
-                  {isAutoPlaying && (
-                    <button
-                      onClick={stopAutoPlay}
-                      className="w-full py-2 bg-red-600 hover:bg-red-500 text-white text-sm font-medium rounded-lg transition-colors"
-                    >
-                      &#x23F9; Stop Auto-Play
-                    </button>
-                  )}
                 </div>
               )}
 
