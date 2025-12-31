@@ -2,49 +2,78 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useERC7715 } from "@/hooks/useERC7715";
+import { useSessionAccount } from "@/providers/SessionAccountProvider";
+import type { AuthSettings } from "@/hooks/useERC7715";
 
+// Props interface - receives all ERC7715 state from parent
 interface ERC7715PanelProps {
-  onAutoPlay: () => Promise<void>;
-  isPlaying: boolean;
+  onAutoPlay: (session: any) => Promise<void>;
+  isPlaying: boolean;  // Game is in progress (polling for result)
+  hasResult: boolean;  // Game result popup is showing (hide Quick Start until dismissed)
+  // ERC7715 state from parent
+  isAuthorized: boolean;
+  isAuthorizing: boolean;
+  permissionContext: any;
+  remainingPlays: number;
+  error: string | null;
+  isAutoPlaying: boolean;
+  supportStatus: "unknown" | "supported" | "unsupported" | "checking";
+  // ERC7715 actions from parent
+  requestPermission: (
+    onAutoExecute?: (session: any) => Promise<void>,
+    overrideSettings?: Partial<AuthSettings>
+  ) => Promise<boolean>;
+  revokePermission: () => void;
+  stopAutoPlay: () => void;
+  clearError: () => void;
+  getTimeRemaining: () => string;
 }
 
-export default function ERC7715Panel({ onAutoPlay, isPlaying }: ERC7715PanelProps) {
-  const {
-    isAuthorized,
-    isAuthorizing,
-    permissionContext,
-    authSettings,
-    remainingPlays,
-    error,
-    isAutoPlaying,
-    autoPlayInterval,
-    supportStatus,
-    requestPermission,
-    revokePermission,
-    startAutoPlay,
-    stopAutoPlay,
-    updateAuthSettings,
-    setAutoPlayInterval,
-    clearError,
-    getTimeRemaining,
-  } = useERC7715();
+export default function ERC7715Panel({
+  onAutoPlay,
+  isPlaying,
+  hasResult,
+  isAuthorized,
+  isAuthorizing,
+  permissionContext,
+  remainingPlays,
+  error,
+  isAutoPlaying,
+  supportStatus,
+  requestPermission,
+  revokePermission,
+  stopAutoPlay,
+  clearError,
+  getTimeRemaining,
+}: ERC7715PanelProps) {
+  const { sessionAccount, createSessionAccount, isLoading: isCreatingSession, error: sessionError } = useSessionAccount();
 
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // Handle authorize button click
-  const handleAuthorize = async () => {
-    clearError();
-    await requestPermission();
-  };
+  // Quick preset configurations
+  interface QuickPreset {
+    name: string;
+    duration: number;
+    playCount: number;
+  }
 
-  // Handle auto-play toggle
-  const handleAutoPlayToggle = () => {
-    if (isAutoPlaying) {
-      stopAutoPlay();
-    } else {
-      startAutoPlay(onAutoPlay);
-    }
+  // Two presets: Super Quick (5min × 2) and Quick Test (15min × 5)
+  // No fixed interval - each game waits for previous result
+  const quickPresets: QuickPreset[] = [
+    { name: "⚡ Super Quick (5m × 2)", duration: 300, playCount: 2 },
+    { name: "🚀 Quick Test (15m × 5)", duration: 900, playCount: 5 },
+  ];
+
+  // Handle quick preset selection with auto-execution
+  const handleQuickPreset = async (preset: QuickPreset) => {
+    clearError();
+
+    // Request permission with auto-execution callback
+    // Pass preset values directly to avoid async state issues
+    await requestPermission(onAutoPlay, {
+      duration: preset.duration,
+      playCount: preset.playCount,
+    });
   };
 
   // Check if authorize button should be disabled
@@ -67,6 +96,11 @@ export default function ERC7715Panel({ onAutoPlay, isPlaying }: ERC7715PanelProp
           {isAuthorized && (
             <span className="px-2 py-0.5 bg-green-500/20 text-green-400 text-xs rounded-full">
               Active
+            </span>
+          )}
+          {isAutoPlaying && (
+            <span className="px-2 py-0.5 bg-blue-500/20 text-blue-400 text-xs rounded-full animate-pulse">
+              Playing {remainingPlays} left
             </span>
           )}
           {supportStatus === "unsupported" && (
@@ -119,6 +153,43 @@ export default function ERC7715Panel({ onAutoPlay, isPlaying }: ERC7715PanelProp
                 </p>
               </div>
 
+              {/* Session Account Creation Section */}
+              {!sessionAccount && (
+                <div className="space-y-3">
+                  <div className="p-3 bg-yellow-500/20 border border-yellow-500/30 rounded-lg">
+                    <p className="text-yellow-400 text-xs font-medium mb-2">Step 1: Create Session Account</p>
+                    <p className="text-yellow-300 text-xs leading-relaxed mb-3">
+                      A session account is needed to execute transactions with delegation. This creates a temporary account with a burner private key.
+                    </p>
+                    <button
+                      onClick={createSessionAccount}
+                      disabled={isCreatingSession}
+                      className="w-full py-2 bg-yellow-600 hover:bg-yellow-500 disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors"
+                    >
+                      {isCreatingSession ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <span className="animate-spin">⏳</span>
+                          Creating Session Account...
+                        </span>
+                      ) : (
+                        "Create Session Account"
+                      )}
+                    </button>
+                    {sessionError && (
+                      <p className="text-red-400 text-xs mt-2">{sessionError}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Session Account Created - Show Info */}
+              {sessionAccount && !isAuthorized && (
+                <div className="p-3 bg-green-500/10 border border-green-500/30 rounded-lg space-y-2">
+                  <p className="text-green-400 text-xs font-medium">✓ Session Account Created</p>
+                  <p className="text-green-300 text-xs break-all font-mono text-[10px]">{sessionAccount.address}</p>
+                </div>
+              )}
+
               {/* Error display */}
               {error && (
                 <div className="p-3 bg-red-500/20 border border-red-500/30 rounded-lg">
@@ -143,84 +214,66 @@ export default function ERC7715Panel({ onAutoPlay, isPlaying }: ERC7715PanelProp
                 </div>
               )}
 
-              {/* Authorization settings (when not authorized) */}
-              {!isAuthorized && (
+              {/* Authorization settings - when session account exists, not authorized, not auto-playing, not polling, and no result showing */}
+              {sessionAccount && !isAuthorized && !isAutoPlaying && !isPlaying && !hasResult && (
                 <div className="space-y-3">
-                  <h4 className="text-white text-sm font-medium">Authorization Settings</h4>
+                  <h4 className="text-white text-sm font-medium">Quick Start</h4>
 
-                  {/* Duration */}
-                  <div className="flex items-center justify-between">
-                    <label className="text-gray-400 text-xs">Duration:</label>
-                    <select
-                      value={authSettings.duration}
-                      onChange={(e) => updateAuthSettings({ duration: Number(e.target.value) })}
-                      className="px-2 py-1 bg-gray-800 text-white text-xs rounded border border-gray-700"
-                    >
-                      <option value={1}>1 Hour</option>
-                      <option value={6}>6 Hours</option>
-                      <option value={12}>12 Hours</option>
-                      <option value={24}>24 Hours</option>
-                      <option value={72}>3 Days</option>
-                      <option value={168}>7 Days</option>
-                    </select>
-                  </div>
-
-                  {/* Play count */}
-                  <div className="flex items-center justify-between">
-                    <label className="text-gray-400 text-xs">Max Plays:</label>
-                    <select
-                      value={authSettings.playCount}
-                      onChange={(e) => updateAuthSettings({ playCount: Number(e.target.value) })}
-                      className="px-2 py-1 bg-gray-800 text-white text-xs rounded border border-gray-700"
-                    >
-                      <option value={5}>5 times</option>
-                      <option value={10}>10 times</option>
-                      <option value={20}>20 times</option>
-                      <option value={50}>50 times</option>
-                      <option value={100}>100 times</option>
-                    </select>
-                  </div>
-
-                  {/* ETH limit */}
-                  <div className="flex items-center justify-between">
-                    <label className="text-gray-400 text-xs">ETH Limit:</label>
-                    <select
-                      value={authSettings.ethAmount}
-                      onChange={(e) => updateAuthSettings({ ethAmount: Number(e.target.value) })}
-                      className="px-2 py-1 bg-gray-800 text-white text-xs rounded border border-gray-700"
-                    >
-                      <option value={0.05}>0.05 ETH</option>
-                      <option value={0.1}>0.1 ETH</option>
-                      <option value={0.5}>0.5 ETH</option>
-                      <option value={1}>1 ETH</option>
-                      <option value={5}>5 ETH</option>
-                    </select>
+                  {/* Quick presets */}
+                  <div className="grid grid-cols-2 gap-2">
+                    {quickPresets.map((preset) => (
+                      <button
+                        key={preset.name}
+                        onClick={() => handleQuickPreset(preset)}
+                        disabled={isAuthorizing}
+                        className="px-3 py-2 bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white text-xs font-medium rounded-lg transition-all"
+                      >
+                        {preset.name}
+                      </button>
+                    ))}
                   </div>
 
                   <p className="text-gray-500 text-xs">
-                    Authorize up to {authSettings.playCount} plays within {authSettings.duration} hours,
-                    spending max {authSettings.ethAmount} ETH.
+                    Select a preset to authorize and start auto-play immediately.
                   </p>
-
-                  <button
-                    onClick={handleAuthorize}
-                    disabled={isAuthorizeDisabled}
-                    className="w-full py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors"
-                  >
-                    {isAuthorizing ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <span className="animate-spin">&#x23F3;</span>
-                        Authorizing...
-                      </span>
-                    ) : (
-                      "Request Permission"
-                    )}
-                  </button>
                 </div>
               )}
 
-              {/* Authorized state */}
-              {isAuthorized && permissionContext && (
+              {/* Auto-playing state (show when auto-play is running or game is polling for result) */}
+              {(isAutoPlaying || isPlaying) && (
+                <div className="space-y-3">
+                  <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-400 text-xs">Status:</span>
+                      <span className="text-blue-400 text-xs font-medium animate-pulse">
+                        {isPlaying ? "Waiting for result..." : "Auto-Playing..."}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-400 text-xs">Remaining Plays:</span>
+                      <span className="text-white text-xs font-medium">{remainingPlays}</span>
+                    </div>
+                    {permissionContext && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-400 text-xs">Expires:</span>
+                        <span className="text-white text-xs">{getTimeRemaining()}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {isAutoPlaying && (
+                    <button
+                      onClick={stopAutoPlay}
+                      className="w-full py-2 bg-red-600 hover:bg-red-500 text-white text-sm font-medium rounded-lg transition-colors"
+                    >
+                      &#x23F9; Stop Auto-Play
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Authorized but not auto-playing and not polling state */}
+              {isAuthorized && permissionContext && !isAutoPlaying && !isPlaying && (
                 <div className="space-y-3">
                   {/* Status info */}
                   <div className="p-3 bg-green-500/10 border border-green-500/30 rounded-lg space-y-2">
@@ -237,40 +290,6 @@ export default function ERC7715Panel({ onAutoPlay, isPlaying }: ERC7715PanelProp
                       <span className="text-white text-xs">{getTimeRemaining()}</span>
                     </div>
                   </div>
-
-                  {/* Auto-play interval */}
-                  <div className="flex items-center justify-between">
-                    <label className="text-gray-400 text-xs">Play Interval:</label>
-                    <select
-                      value={autoPlayInterval}
-                      onChange={(e) => setAutoPlayInterval(Number(e.target.value))}
-                      disabled={isAutoPlaying}
-                      className="px-2 py-1 bg-gray-800 text-white text-xs rounded border border-gray-700 disabled:opacity-50"
-                    >
-                      <option value={3000}>3 seconds</option>
-                      <option value={5000}>5 seconds</option>
-                      <option value={10000}>10 seconds</option>
-                      <option value={30000}>30 seconds</option>
-                      <option value={60000}>1 minute</option>
-                    </select>
-                  </div>
-
-                  {/* Auto-play toggle */}
-                  <button
-                    onClick={handleAutoPlayToggle}
-                    disabled={isPlaying || remainingPlays <= 0}
-                    className={`w-full py-2 text-white text-sm font-medium rounded-lg transition-colors ${
-                      isAutoPlaying
-                        ? "bg-red-600 hover:bg-red-500"
-                        : "bg-green-600 hover:bg-green-500"
-                    } disabled:bg-gray-600 disabled:cursor-not-allowed`}
-                  >
-                    {isAutoPlaying ? (
-                      <>&#x23F9; Stop Auto-Play</>
-                    ) : (
-                      <>&#x25B6; Start Auto-Play</>
-                    )}
-                  </button>
 
                   {/* Revoke button */}
                   <button

@@ -8,6 +8,7 @@ import { ClawMachine } from "@/components/claw-machine";
 import PayoutTable from "@/components/PayoutTable";
 import ERC7715Panel from "@/components/ERC7715Panel";
 import { useJackpet } from "@/hooks/useJackpet";
+import { useERC7715 } from "@/hooks/useERC7715";
 
 // Custom ConnectButton to force display chain info
 function CustomConnectButton() {
@@ -103,7 +104,26 @@ export default function Home() {
     result,
     play,
     playDemo,
+    resetResult,
   } = useJackpet();
+
+  // ✅ Get ALL ERC7715 state from single hook instance (shared between page and ERC7715Panel)
+  const erc7715 = useERC7715();
+  const {
+    isAutoPlaying,
+    triggerNextGame,
+    isAuthorized,
+    isAuthorizing,
+    permissionContext,
+    remainingPlays,
+    error,
+    supportStatus,
+    requestPermission,
+    revokePermission,
+    stopAutoPlay,
+    clearError,
+    getTimeRemaining,
+  } = erc7715;
 
   useEffect(() => {
     setMounted(true);
@@ -202,10 +222,31 @@ export default function Home() {
                   ticketFee={ticketFee}
                   jackpot={jackpotPool}
                   contractBalance={contractBalance}
+                  isAutoPlaying={isAutoPlaying}
+                  onResultDismissed={() => {
+                    resetResult();
+                    triggerNextGame();
+                  }}
                 />
                 {/* Right: ERC-7715 Auto-Play Panel */}
                 <div className="w-[280px] flex-shrink-0">
-                  <ERC7715Panel onAutoPlay={() => play()} isPlaying={isPlaying} />
+                  <ERC7715Panel
+                    onAutoPlay={(session) => play(100, session, true)}
+                    isPlaying={isPlaying}
+                    hasResult={result !== null}
+                    isAuthorized={isAuthorized}
+                    isAuthorizing={isAuthorizing}
+                    permissionContext={permissionContext}
+                    remainingPlays={remainingPlays}
+                    error={error}
+                    isAutoPlaying={isAutoPlaying}
+                    supportStatus={supportStatus}
+                    requestPermission={requestPermission}
+                    revokePermission={revokePermission}
+                    stopAutoPlay={stopAutoPlay}
+                    clearError={clearError}
+                    getTimeRemaining={getTimeRemaining}
+                  />
                 </div>
               </div>
             )}

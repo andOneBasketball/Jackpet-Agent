@@ -6,6 +6,7 @@ import { WagmiProvider } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { arbitrumSepolia } from "wagmi/chains";
 import { config } from "@/config/wagmi";
+import { SessionAccountProvider } from "@/providers/SessionAccountProvider";
 import "@rainbow-me/rainbowkit/styles.css";
 
 export function Providers({ children }: { children: ReactNode }) {
@@ -38,7 +39,10 @@ export function Providers({ children }: { children: ReactNode }) {
             borderRadius: "large",
           })}
         >
-          {mounted ? children : <div style={{ visibility: "hidden" }}>{children}</div>}
+          {/* Wrap children with SessionAccountProvider */}
+          <SessionAccountProvider>
+            {mounted ? children : <div style={{ visibility: "hidden" }}>{children}</div>}
+          </SessionAccountProvider>
         </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>

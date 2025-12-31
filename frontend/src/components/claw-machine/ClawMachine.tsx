@@ -13,6 +13,8 @@ interface ClawMachineProps {
   ticketFee: string;
   jackpot: string;
   contractBalance: string;
+  isAutoPlaying?: boolean;  // ✅ Auto-play mode flag
+  onResultDismissed?: () => void;  // ✅ Callback when result popup is closed
 }
 
 type PetType = "FOX" | "WOLF" | "FROG";
@@ -45,6 +47,8 @@ export default function ClawMachine({
   ticketFee,
   jackpot,
   contractBalance,
+  isAutoPlaying = false,
+  onResultDismissed,
 }: ClawMachineProps) {
   const [mounted, setMounted] = useState(false);
   const [pets, setPets] = useState<Pet[]>([]);
@@ -57,6 +61,7 @@ export default function ClawMachine({
   const [showGrabEffect, setShowGrabEffect] = useState(false);
   const [gamePhase, setGamePhase] = useState<"idle" | "grabbing" | "result">("idle");
   const [showResult, setShowResult] = useState(false);
+  const [autoCloseCountdown, setAutoCloseCountdown] = useState<number | null>(null);  // Countdown for auto-close
   const processedResultRef = useRef<{ a: number; b: number; c: number } | null>(null);
   const machineRef = useRef<HTMLDivElement>(null);
 
@@ -233,12 +238,58 @@ export default function ClawMachine({
   };
 
   // Reset game (for UI only, doesn't clear result tracking)
-  const resetGame = useCallback(() => {
+  // clearProcessedResult: only set to true when preparing for a new game (auto-play next round)
+  const resetGame = useCallback((clearProcessedResult: boolean = false) => {
     setPets(generatePetPool());
     setCollected([]);
     setGamePhase("idle");
     setShowResult(false);
+    setAutoCloseCountdown(null);
+    // Only clear processed result when explicitly requested (for auto-play next round)
+    // Don't clear when manually dismissing to avoid re-triggering animation with same result
+    if (clearProcessedResult) {
+      processedResultRef.current = null;
+    }
   }, []);
+
+  // ✅ Auto-close result popup in auto-play mode with countdown
+  useEffect(() => {
+    if (showResult && isAutoPlaying) {
+      console.log("[ClawMachine] Auto-play mode: starting 2s countdown to close result");
+
+      // Start countdown from 2
+      setAutoCloseCountdown(2);
+
+      // Countdown timer (updates every second)
+      const countdownInterval = setInterval(() => {
+        setAutoCloseCountdown((prev) => {
+          if (prev === null || prev <= 1) {
+            return prev;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      // Auto-close after 2 seconds
+      const closeTimer = setTimeout(() => {
+        console.log("[ClawMachine] Auto-closing result popup, triggering next game");
+        setShowResult(false);
+        setAutoCloseCountdown(null);
+        resetGame(true);  // Clear processedResultRef for next game
+        // Notify parent that result was dismissed, ready for next game
+        if (onResultDismissed) {
+          console.log("[ClawMachine] Calling onResultDismissed callback");
+          onResultDismissed();
+        }
+      }, 2000);
+
+      return () => {
+        clearInterval(countdownInterval);
+        clearTimeout(closeTimer);
+        setAutoCloseCountdown(null);
+      };
+    }
+  }, [showResult, isAutoPlaying, onResultDismissed, resetGame]);
 
   // Only 5-4-3 loses, all other combinations win
   const isWinner = result && !(result.a === 5 && result.b === 4 && result.c === 3);
@@ -342,7 +393,7 @@ export default function ClawMachine({
 
       {gamePhase === "result" && (
         <button
-          onClick={resetGame}
+          onClick={() => resetGame()}
           className="mt-1 w-full py-2 rounded-lg bg-gray-700 text-white hover:bg-gray-600 text-sm"
         >
           Reset
@@ -443,7 +494,12 @@ export default function ClawMachine({
               <motion.button
                 onClick={() => {
                   setShowResult(false);
+                  setAutoCloseCountdown(null);
                   resetGame();
+                  // Notify parent that result was dismissed (for both manual and auto-play modes)
+                  if (onResultDismissed) {
+                    onResultDismissed();
+                  }
                 }}
                 className={`mt-4 px-6 py-2 rounded-lg font-bold ${isWinner
                   ? "bg-white/20 hover:bg-white/30 text-white"
@@ -457,6 +513,27 @@ export default function ClawMachine({
               >
                 {isWinner ? "Claim & Continue" : "Try Again"}
               </motion.button>
+
+              {/* Auto-close countdown indicator */}
+              {isAutoPlaying && autoCloseCountdown !== null && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="mt-3 text-center"
+                >
+                  <div className="text-sm text-white/70">
+                    Next game in <span className="font-bold text-yellow-300">{autoCloseCountdown}</span>s...
+                  </div>
+                  <div className="mt-1 w-full h-1 bg-white/20 rounded-full overflow-hidden">
+                    <motion.div
+                      className="h-full bg-yellow-400"
+                      initial={{ width: "100%" }}
+                      animate={{ width: "0%" }}
+                      transition={{ duration: 2, ease: "linear" }}
+                    />
+                  </div>
+                </motion.div>
+              )}
             </motion.div>
           </motion.div>
         )}
