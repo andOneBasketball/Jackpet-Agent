@@ -1,11 +1,12 @@
-# Jackpet Game Design
+# Jackpet Agent Game Design
 
-This section documents the core gameplay mechanics and rule logic of **Jackpet**.
+This document details the core gameplay mechanics and rule logic of **Jackpet Agent**, built to demonstrate **MetaMask Advanced Permissions** in a real-world agentic on-chain application.
 
-While the project-level README provides a high-level overview of the vision and goals,
-the documents in this folder serve as the single source of truth for how the game
-actually works on-chain.
+While the project README provides a high-level overview of vision and goals, this document serves as the single source of truth for how **agentic gameplay executes autonomously on-chain**.
 
-All gameplay outcomes, rewards, and jackpot distributions described here are
-fully enforced by smart contracts, ensuring transparency, fairness, and
-trust-minimized execution.
+All gameplay outcomes, rewards, and jackpot distributions described here are fully enforced by smart contracts and executed by an autonomous agent under a **single ERC-7715 permission**, ensuring:
+
+- Transparency and auditable execution  
+- Fairness through provable randomness (Chainlink VRF)  
+- Trust-minimized automated play without repeated wallet interactions  
+- Chain-agnostic compatibility with any EIP-7702–enabled network

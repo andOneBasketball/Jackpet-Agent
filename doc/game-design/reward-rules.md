@@ -1,21 +1,18 @@
 # Reward Rules
 
-Jackpet uses a deterministic rule-based system to evaluate each game round.
+**Jackpet Agent** uses a deterministic, rule-based system to evaluate each game round executed by an autonomous agent under a single **ERC-7715 permission**.
 
-After drawing 12 pets, the counts of the three pet types are sorted in descending order
-and represented as a combination `{a, b, c}`.
-
-Each combination maps to a predefined reward rule.
+After drawing 12 pets, the counts of the three pet types are sorted in descending order and represented as a combination `{a, b, c}`. Each combination maps to a predefined reward rule.
 
 ## Reward Components
 
-Each rule may include one or both of the following components:
+Each rule may include one or both of the following:
 
 1. **Fixed Ticket Payout**  
    A multiplier applied to the base ticket fee, scaled by the player's selected ticket rate.
 
 2. **Jackpot Pool Share**  
-   A percentage of the current jackpot pool distributed to the player.
+   A percentage of the current jackpot pool distributed to the player automatically.
 
 ## Example Outcomes
 
@@ -38,19 +35,15 @@ Each rule may include one or both of the following components:
 
 ## Jackpot Contribution
 
-- When a player receives no payout, **1% of the ticket fee** is added to the jackpot pool.
-- The jackpot pool grows organically through gameplay and can only be reduced
-  through predefined reward rules.
+- Losing rounds add **1% of the ticket fee** to the on-chain jackpot pool.  
+- The jackpot pool grows organically through autonomous gameplay and can only be reduced according to predefined rules.
 
 ## Rule Enforcement
 
-All reward rules are enforced entirely on-chain:
+All reward rules are **strictly enforced on-chain** via smart contracts:
 
-- All game rules and parameters are defined and enforced by on-chain smart contracts,
-  and any changes must go through transparent, on-chain governance processes.
-- There are no discretionary or manual payouts. All rewards and jackpot distributions
-  are executed strictly according to publicly verifiable contract logic.
-- No individual or entity, including the project team, can influence or manipulate
-  the outcome of any game round once it has started.
+- Rules are executed automatically by the agent under the ERC-7715 permission.  
+- No discretionary or manual payouts exist; every reward and jackpot distribution is fully verifiable.  
+- Neither the project team nor any external party can influence or manipulate outcomes once a round starts.  
 
-This guarantees that every player is treated equally under the same transparent rules.
+This guarantees **equal treatment for all players**, full transparency, and trust-minimized agentic gameplay.
