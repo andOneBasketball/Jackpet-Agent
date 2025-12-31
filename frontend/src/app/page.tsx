@@ -258,7 +258,7 @@ export default function Home() {
           transition={{ delay: 0.5 }}
           className="mt-2 text-center text-gray-500 text-xs"
         >
-          <p>Powered by Chainlink VRF on BNB Chain | Play responsibly. 18+ only.</p>
+          <p>Powered by Chainlink VRF | Play responsibly. 18+ only.</p>
         </motion.footer>
       </div>
     </div>
