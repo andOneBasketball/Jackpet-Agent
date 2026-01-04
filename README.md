@@ -3,6 +3,9 @@
 ## Intro
 Jackpet Agent is a chain-agnostic, agentic on-chain pet game, deployed on Sepolia, where players grant a single ERC-7715 permission and let an autonomous agent auto-play multiple rounds with enforced limits via MetaMask Advanced Permissions.
 
+> **Hackathon Notice:**  
+> This project includes dedicated sections for **Advanced Permissions Usage** and **Social Media** as required by the MetaMask Advanced Permissions Dev Cook-Off.
+
 ![jackpet_agent_cover](./doc/picture/jackpet_agent_optimized_cover.png)
 
 ## Project Overview
@@ -141,6 +144,42 @@ Jackpet Agent aims to demonstrate the future of autonomous on-chain applications
 Jackpet Agent is a **new project built specifically for the MetaMask Advanced Permissions Dev Cook-Off**. While inspired by the original Jackpet game mechanics, the project has been re-architected from the ground up to highlight **ERC-7715 permissions, agent-based execution, and autonomous gameplay**.
 
 It serves as a concrete example of how Advanced Permissions unlock seamless, secure, and creative agentic user experiences.
+
+## ⭐ Advanced Permissions Usage
+Jackpet Agent is built explicitly around **MetaMask Advanced Permissions**, using a single ERC-7715 authorization to enable fully autonomous, multi-round on-chain gameplay.
+
+### Requesting Advanced Permissions
+Players grant a one-time, scoped permission via MetaMask to allow the agent to execute game actions on their behalf.  
+This permission explicitly defines:
+
+- Maximum ETH spend per round
+- Maximum number of executable rounds
+- Validity period
+- Allowed contract calls (game start & execution)
+
+**Code reference – Requesting Advanced Permissions:**
+- https://github.com/andOneBasketball/Jackpet-Agent/blob/main/frontend/src/hooks/useERC7715.ts
+
+This flow allows users to review and fine-tune permission limits directly in MetaMask before approving, ensuring transparency and informed consent.
+
+### Redeeming (Using) Advanced Permissions
+
+After approval, the autonomous agent redeems the granted ERC-7715 permission to automatically start and execute multiple game rounds without requiring repeated wallet confirmations.
+
+All executions:
+- Are strictly constrained by the originally approved permission scope
+- Are fully enforced on-chain through contract-level checks
+- Execute deterministically without any off-chain trust assumptions
+
+**Code reference – Redeeming Advanced Permissions:**
+- https://github.com/andOneBasketball/Jackpet-Agent/blob/main/frontend/src/hooks/useBundler.ts
+
+Permission lifecycle management, including revocation or expiration, is handled by MetaMask as part of the Advanced Permissions framework, keeping user control at the wallet level while enabling seamless autonomous execution.
+
+## ⭐ Social Media
+We documented and shared the full development journey of Jackpet Agent on X, showcasing how **MetaMask Advanced Permissions** enabled autonomous gameplay, reduced repeated wallet prompts, and significantly improved the user experience.
+🔗 Project journey on X (tagging @MetaMaskDev):  
+https://x.com/0xSevenK/status/2006622562298769635?s=20
 
 ## License
 
