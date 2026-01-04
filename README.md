@@ -158,7 +158,7 @@ This permission explicitly defines:
 - Allowed contract calls (game start & execution)
 
 **Code reference – Requesting Advanced Permissions:**
-- https://github.com/andOneBasketball/Jackpet-Agent/blob/main/frontend/src/hooks/useERC7715.ts
+- https://github.com/andOneBasketball/Jackpet-Agent/blob/739494f240d2d0b40a1d85cd270179d991e5770d/frontend/src/hooks/useERC7715.ts#L530
 
 This flow allows users to review and fine-tune permission limits directly in MetaMask before approving, ensuring transparency and informed consent.
 
@@ -172,7 +172,7 @@ All executions:
 - Execute deterministically without any off-chain trust assumptions
 
 **Code reference – Redeeming Advanced Permissions:**
-- https://github.com/andOneBasketball/Jackpet-Agent/blob/main/frontend/src/hooks/useBundler.ts
+- https://github.com/andOneBasketball/Jackpet-Agent/blob/739494f240d2d0b40a1d85cd270179d991e5770d/frontend/src/hooks/useBundler.ts#L107
 
 Permission lifecycle management, including revocation or expiration, is handled by MetaMask as part of the Advanced Permissions framework, keeping user control at the wallet level while enabling seamless autonomous execution.
 
